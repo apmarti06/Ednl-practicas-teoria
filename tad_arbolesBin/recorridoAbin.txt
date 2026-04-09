@@ -1,0 +1,49 @@
+Recordar las dos formas de recorrer un árbol, por profundidad/altura, o bien en anchura.
+
+
+De la primera forma se puede hacer de forma recursiva, o implementar una pila para hacerlo de
+forma iterativa, pudiendose recorrer de 3 formas distintas preorden, inorden y postorden ... Nos
+será util implementar una forma u otra dependiendo lo que deseemos hacer (crear, destruir árboles ... )
+
+- PREORDEN:
+procesar(n, A);
+preordenAbin(A.hijoIzqdo(n), A, procesar);
+preordenAbin(A.hijoDrcho(n), A, procesar);
+
+- INORDEN:
+inordennAbin(A.hijoIzqdo(n), A, procesar);
+procesar(n, A);
+inordennAbin(A.hijoDrcho(n), A, procesar);
+
+- POSTORDEN:
+postordenAbin(A.hijoIzqdo(n), A, procesar);
+postordenAbin(A.hijoDrcho(n), A, procesar);
+procesar(n, A);
+
+ITERATIVA: usando while o do-while
+
+Pila<typename Abin<T>::nodo> P; // Pila de nodos de árbol binario.P.push(n);
+    while (!P.vacia()){
+        n = P.tope(); P.pop();
+        procesar(n, A);
+        if (n != Abin<T>::NODO_NULO){
+            P.push(A.hijoDrcho(n));
+            P.push(A.hijoIzqdo(n));
+    }
+}
+
+O EN ANCHURA recorriendo los nodos niveles a niveles ... (todavía no he encontrado un uso especial)
+
+Cola<typename Abin<T>::nodo> C; // Cola de nodos de árbol binario.
+    if (n != Abin<T>::NODO_NULO) {
+        do {
+            if (!C.vacia()){
+                n = C.frente();
+                C.pop();
+            }
+            procesar(n, A);
+            // decidimos si en el nivel actual metemos los nodos hijos
+            if (A.hijoIzqdo(n) != Abin<T>::NODO_NULO) C.push(A.hijoIzqdo(n));
+            if (A.hijoDrcho(n) != Abin<T>::NODO_NULO) C.push(A.hijoDrcho(n));
+            } while (!C.vacia());
+    }
