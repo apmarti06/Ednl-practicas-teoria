@@ -1,0 +1,102 @@
+// EJERCICIO 3 añadido en el tad bin
+
+// Definimos la estructura de datos de la siguiente forma --> Apartado A
+
+class Abin { // no usamos la plantilla para este tad, pues solo usaremos dos tipos (operador y operando)
+    public:
+        // todos los miembros, métodos publicos para un usuario (también incluimos NODO_NULO)
+        // typedef celda* nodo;
+    private:
+        struct celda{
+            struct elto{ // Hacemos la distincion de tipos 
+                enum Tipo {OPERADOR, OPERANDO} tipo;
+                union {
+                    char operador;
+                    int operando;
+                };
+            
+            };
+            elto e;
+            nodo padre, hizq, hder;
+        };
+        nodo r; // implementacion enlazada
+        // Métodos internos privados                                                                                                                         
+    };
+
+// Apartado B, damos por heho que el árbol recibido cumple el requisito del problema
+
+Incluimos la sobrecarga en los operadores, para usarlo como requisito !
+// dentro del tad 
+......
+// Operadores necesarios para abin_E-S.h
+    friend std::ostream& operator<<(std::ostream& os, const ElementoExpresion& e);
+    friend std::istream& operator>>(std::istream& is, ElementoExpresion& e);
+    friend bool operator!=(const elto& a, const elto& b);
+......
+
+bool operator!=(const elto& a, const elto& b) const {
+    // acceso directo a miembros/operaciones al ser friend
+    if (a.tipo != b.tipo) return true;
+    // Verificamos si coinciden los tipos 
+    if (a.tipo == elto::OPERADOR){
+        return a.operador != b.operador; 
+    } else {
+        return a.operando != b.operando;
+    }
+}
+
+ostream& operator<<(ostream& os, const elto& e) {
+// acceso directo a miembros/operaciones al ser friend
+    if (e.tipo == elto::OPERANDO){
+        os << e.operador; 
+    } else {
+        os << e.operando;
+    }
+    return os;
+}
+
+istream& operator>>(istream& is, elto& e) { // modificadora
+// acceso directo a miembros/operaciones al ser friend
+    char c;
+    is >> c;
+    // vemos si el usuario por teclado pone un operador o un operando
+    if (c >= 0 && c <= 9){
+        // transformamos el tipo a enum
+        is.putback(c);
+        int num;
+        is >> num; 
+        // requiere de un asignador de copia para los char/entero
+        e = num;
+    } else{
+        e = is;
+    }
+    return is;
+}
+
+// NO USAMOS EL tipo T pues los elementos son de la clase Elto
+
+int Abin::resultado(const Abin<elto>& A){
+    return resultadoRec(A, A.raiz());
+}
+
+int Abin::resultadoRec(const Abin<elto>& A, typename Abin<elto>::nodo n){
+    // Si es hoja (no tiene hijos izquierdo NI derecho)
+    if (A.hijoIzq(n) == Abin<elto>::NODO_NULO && 
+        A.hijoDer(n) == Abin<elto>::NODO_NULO) {
+        return A.elemento(n).operando;  // Devuelve el valor del operando
+    }
+    
+    // Si no es hoja, es un operador
+    switch(A.elemento(n).operador) {
+        case '+':
+            return resultadoRec(A, A.hijoIzq(n)) + resultadoRec(A, A.hijoDer(n));
+        case '-':
+            return resultadoRec(A, A.hijoIzq(n)) - resultadoRec(A, A.hijoDer(n));
+        case '*':
+            return resultadoRec(A, A.hijoIzq(n)) * resultadoRec(A, A.hijoDer(n));
+        case '/':
+            return resultadoRec(A, A.hijoIzq(n)) / resultadoRec(A, A.hijoDer(n));
+        default:
+            return 0;  // No debería llegar aquí
+    }
+}
