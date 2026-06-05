@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "c:/Users/Usuario/c++/ednl/arboles/tad_arbolBin",
-      "program": "c:/Users/Usuario/c++/ednl/arboles/tad_arbolBin/build/Debug/outDebug",
+      "cwd": "c:/Users/Usuario/c++/ednl/arboles/tad_arbolesBin",
+      "program": "c:/Users/Usuario/c++/ednl/arboles/tad_arbolesBin/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

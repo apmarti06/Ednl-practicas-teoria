@@ -247,7 +247,6 @@ T valor_superior(const Abb<T>& A, const T& e, T& candidato, bool& encontrado) {
 // LCA conocer el arbol ancestral
 
 
-
 // Dado un Abb A, decir cual es el k-esimo elemento del árbol, (podemos usar el abin)
 
 

@@ -79,7 +79,7 @@ de costes, implementa un subprograma que devuelva la longitud de su diámetro. *
 // devolveremos la distancia del epicentro que los nodos más alejados, donde la suma sera el diametro deseado
 
 template <typename tCoste>
-size_t Pseudocentro(const GrafoP<tCoste>& G, tCoste& diametro)
+std::pair<size_t, tCoste> Pseudocentro(const GrafoP<tCoste>& G)
 {
     size_t n = G.numVert();
     diametro = GrafoP<tCoste>::INFINITO;
@@ -87,6 +87,7 @@ size_t Pseudocentro(const GrafoP<tCoste>& G, tCoste& diametro)
 
 
     for (size_t i = 0; i < n; i++){
+        // probamos en cada vertice, cual es del coste minimo, es el que mayor coste tiene entre pares, y cogemos otro que los minimice
         vector<size_t> P;
         vector<tCoste> d = Dijkstra(G, i, P);
 
@@ -102,6 +103,7 @@ size_t Pseudocentro(const GrafoP<tCoste>& G, tCoste& diametro)
             }
         }
 
+        // si se ha encontrado un par de distancias maximas, las guardamos en sumas para ver cual es mejor
         if (m1 != -1 && m2 != -1){
             diametro = std::min(diametro, suma(m1, m2));
             sumas[i] = suma(m1, m2);
@@ -119,7 +121,7 @@ size_t Pseudocentro(const GrafoP<tCoste>& G, tCoste& diametro)
         }
     }
     
-    return pseudocentro;
+    return std::make_pair{pseudocentro, minSuma};
 }
 
 /*
@@ -173,7 +175,7 @@ void profundidad(const GrafoP<tCoste>& G, size_t u, vector<int>& color, bool& ci
 
     // Recorremos los nodos adyacentes de u
     for (size_t v = 0; v < G.numVert() && !ciclo; v++) {
-        if (G[u][v] != GrafoP<tCoste>::INFINITO) {  // Si hay una arista de u a v
+        if (G[u][v] != GrafoP<tCoste>::INFINITO && G[u][v] != 0) {  // Si hay una arista de u a v
             if (color[v] == 1) {
                 // Si encontramos un nodo en proceso, hay un ciclo
                 ciclo = true;
@@ -201,7 +203,7 @@ bool matrizCostes_es_aciclica (const GrafoP<tCoste>& P){
         if (color[u] == 0){
             profundidad(P, i, color, ciclo);
         }
-    }
+    }   
 
     // si es ciclico tenemos que la matriz de costes no es aciclica
     return !ciclo;
@@ -226,6 +228,8 @@ usadas).
 d) Pero el gobierno no puede permanecer impasible ante la situación y ha exigido
 que absolutamente todos los viajes que se hagan por el país pasen por la capital
 del mismo, donde se harán los controles de seguridad pertinentes.
+
+NOS DICE QUE SI UN VIAJE PASA POR CAPITAL origen-CAPITAL-destino, usamod dijkstra normal e inverso
 
 Dadas estas cuatro condiciones, se pide implementar un subprograma que dados
 • el grafo (matriz de costes) de Zuelandia en situación normal,
@@ -269,7 +273,7 @@ vector<std::pair<size_t, size_t>> carreteras, size_t capital){
     // Creamos el grafo Zuelandia, por el constructor de copia
     GrafoP<tCoste> Zuelandia(G_);
 
-    // Guardamos los caminos que deben de hacer sin pasar por territorio enemigo, 
+    // Guardamos los caminos que deben de hacer sin pasar por territorio enemigo pasando obligatoriamente por la capital, 
     // Y que pase por la ciudad, donde este debe ser el coste minimo
     for (size_t i = 0; i < Zuelandia.numVert(); i++){
         for (size_t j = 0; j < Zuelandia.numVert(); j++){
@@ -277,6 +281,7 @@ vector<std::pair<size_t, size_t>> carreteras, size_t capital){
                 Zuelandia[i][j] = GrafoP<tCoste>::INFINITO;  // No hay ruta disponible
             } else { // calculamos la distancia entre dos ciudades pasando por la capital
                 Zuelandia[i][j] = suma(d1[i], d2[j]);
+                // x[i][j] = x[j][i] = suma(d1[i], d2[j]) seria erroneo ya que dejaria de ser un grafo dirigido
             }
         }
     }

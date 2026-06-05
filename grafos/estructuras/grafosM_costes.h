@@ -50,6 +50,3 @@ inline bool GrafoP<T>::esDirigido() const {
     }
     return true;
 }
-
-
-// implementacion dijkstra
