@@ -1,5 +1,6 @@
 #ifndef AGEN_LIS_H
 #define AGEN_LIS_H
+
 #include <cassert>
 #include <cstddef> // size_t
 #include <cstdint> // SIZE_MAX, máx. de size_t
@@ -57,7 +58,7 @@ inline bool Agen<T>::valido (nodo n) const{
 }
 
 template <typename T>
-Agen<T>::Agen()(size_t maxNodos) : nodos{new celda[maxNodos]}, numNodos{0}, max_Nodos{maxNodos} 
+Agen<T>::Agen(size_t maxNodos) : nodos{new celda[maxNodos]}, numNodos{0}, max_Nodos{maxNodos} 
 {
     if (maxNodos > 1){ // creamos listas de celdas libres
         libre = 1;
@@ -257,4 +258,6 @@ inline typename Agen<T>::nodo Agen<T>::hermDrcho(nodo n) const {
 
     return p == Lhp.fin() ? NODO_NULO :Lhp.elemento(p);
 }
+
+#endif
 

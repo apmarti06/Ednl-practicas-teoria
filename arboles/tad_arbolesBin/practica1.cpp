@@ -1,5 +1,5 @@
 #include "arbolBinDIM.h"
-//#include "arbolBinPS.h"
+#include "arbolBinPosRel.h"
 #include <iostream>
 #include <algorithm>
 
@@ -43,12 +43,10 @@ int tama_Altura_Abin(const Abin<T> A){
 /*3. Implementa un subprograma que, dados un árbol binario y un nodo del mismo, determine
 la profundidad de este nodo en dicho árbol. (recorremos el árbol alreves, desde el hijo hacia el nodo padre raiz)*/
 
-template <typemame T>
+template <typename T>
 int profundidad(const Abin<T> A, typename Abin<T>::nodo n){ 
     if (n == Abin<T>::NODO_NULO){ // no nos quedan mas nodos por recorrer, pues estamos en el raíz
         return 0;
-    } else if (n == A.raiz()){
-        return 1;
     } else {
         return 1 + profundidad(A, A.padre(n));
     }
@@ -58,7 +56,7 @@ int profundidad(const Abin<T> A, typename Abin<T>::nodo n){
 nodo y otra que calcule la altura de un nodo en un árbol dado. Implementa esta operación para
 la representación vectorial (índices del padre, hijo izquierdo e hijo derecho).*/
 
-// hecho en el tad arbol binario vectorial
+// Lo implementamos desde 0, en el tad de pos_relativas
 
 /* 5. lo mismo en una enlazada*/
 
@@ -73,15 +71,16 @@ int desiquilibrio (const Abin<T> A){
 
 template <typename T>
 int desiquilibrioRec(const Abin<T> A, typename Abin<T>::nodo n){
-    if (n == Abin<T>::NODO_NULO){
+    if (n == Abin<T>::NODO_NULO){ // no ponemos a -1 pues el de altura ya lo hace
         return 0;
     } else {
         int izq = Altura_A(A, A.hijoIzq(n));
         int der = Altura_A(A, A.hijoDer(n));
-
         return std::max(desiquilibrioRec(A, A.hijoIzq(n)), desiquilibrioRec(A, A.hijoDer(n)), std::abs(izq - der));
     }
 }
+
+
 
 /*7. Implementa un subprograma que determine si un árbol binario es o no pseudocompleto.
 En este problema entenderemos que un árbol es pseudocompleto, si en el penúltimo nivel
@@ -95,8 +94,9 @@ Abin<T>::NODO_NULO;
     if (n == NODO_NULO){
         return true;
     }
-    else if (altura - 1 == profundidad_actual){ //comparamos la altura actual para ver si es la deseada del nodo
-        
+    // Vemos si es el nivel donde se comprueba que es pseudocompleto (penultimo nivel, donde bajamos usando profundidad)
+    else if (altura - 1 == profundidad_actual){ 
+        // si hay dos hijos o ninguno
         if (A.hijoIzq(n) != NODO_NULO && A.hijoDer(n) != NODO_NULO ||
         A.hijoIzq(n) == NODO_NULO && A.hijoDer(n) == NODO_NULO){
             return true;
@@ -106,6 +106,7 @@ Abin<T>::NODO_NULO;
 
     }
     else {
+        // un nodo ancestro sera verdadero solo si sus descendientes lo son
         return (esComprobarPseudocompleto(A, A.hijoIzq(n), altura , profundidad_actual + 1) &&
         esComprobarPseudocompleto(A, A.hijoDer(n), altura, profundidad_actual + 1));
     }

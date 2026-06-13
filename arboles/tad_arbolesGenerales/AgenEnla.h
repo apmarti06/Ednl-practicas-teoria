@@ -5,15 +5,16 @@
 #include <utility> // swap
 
 template <typename T>
-    struct celda;
+    
 class Agen {
+    struct celda;
 public:
     typedef celda* nodo;
     // constructores, asignador de copia, destructor
     Agen();
     Agen(const Agen& A);
     Agen& operator=(const Agen& A);
-    Agen~();
+    ~Agen();
 
     // Operaciones + un miembro clase Agen
     static const nodo NODO_NULO; 
@@ -29,7 +30,7 @@ public:
     size_t tama() const;
     const T& elemento(nodo n) const; // lectura
     T& elemento(nodo n); // lectura-escritura
-    raiz() const;
+    nodo raiz() const;
     nodo padre(nodo n) const;
     nodo hijoIzqdo(nodo n) const;
     nodo hermDrcho(nodo n) const;
@@ -103,8 +104,8 @@ nodo hedrcho;
 }
 
 template <typename T>
-inline Agen<T>::Agen~() {
-    destuir(r); // vaciar el árbol
+inline Agen<T>::~Agen() {
+    destruir(r); // vaciar el árbol
 }
 
 template <typename T>
@@ -127,7 +128,7 @@ inline void Agen<T>::insertarRaiz(const T& e){
 template <typename T>
 inline void Agen<T>::insertarHijoIzqdo(nodo n, const T& e){
     assert(n != NODO_NULO);
-    // añadimos el nodo e incrementamos el numero de nodos
+    // añadimos el nodo e incrementamos el numero de nodos, donde n apunta al nuevo
     n->hizq = new celda{e, n, NODO_NULO, n->hizq};
     num_nodos++;   
 }
@@ -137,7 +138,7 @@ inline void Agen<T>::insertarHermDrcho(nodo n, const T& e){
     assert(n != NODO_NULO);
     assert(n != r); // n no es la raíz
     // añadimos el nodo e incrementamos el numero de nodos
-    n->heder = new celda{e, n->padre, NODO_NULO, n->heder};
+    n->heder = new celda{e, n->padre, NODO_NULO, n->heder}; // n apunta a un nuevo nodo, que es el hermano derecho de n, y el hermano derecho de n pasa a ser el hermano derecho del nuevo nodo
     num_nodos++;   
 }
 
@@ -147,10 +148,9 @@ inline void Agen<T>::eliminarHijoIzqdo(nodo n){
     nodo hizqdo;
     assert(n != NODO_NULO);
     hizqdo = n->hizq;
-    assert(hizqdo != NODO_NULO);
-    assert(hizqdo->hizq != NODO_NULO);
-    n->hizq = hizqdo->heder;
-
+    assert(hizqdo != NODO_NULO && hizqdo->hizq == NODO_NULO); // Existe hijo izqdo. y es hoja.
+    // hacemos que n apunte al hermano del hijo izquierdo y lo borramos (como no apuntamos a esa direccion de memoria no hacemos nullptr)
+    n->hizq = hizqdo->heder; 
     delete hizqdo;
     num_nodos--;
 }
@@ -160,13 +160,12 @@ inline void Agen<T>::eliminarHermDrcho(nodo n){
     nodo hedrcho;
     assert(n != NODO_NULO);
     hedrcho = n->heder;
-    assert(hedrcho != NODO_NULO); // Existe hermano drcho.
-    assert(hedrcho->hizq == NODO_NULO); // y es hoja.
+    assert(hedrcho != NODO_NULO && hedrcho->hizq == NODO_NULO); // Existe hermano drcho y es hoja
     
-    // El hermano del hermano se convierte en el nuevo hermano drcho de n.
+    // El hermano del hermano se convierte en el nuevo hermano drcho de n, como n apunta al nuevo hermano, no hacemos nullptr
     n->heder = hedrcho->heder;
     delete hedrcho;
-    --numNodos;
+    --num_nodos;
 }
 
 template <typename T>
@@ -178,8 +177,51 @@ inline void Agen<T>::eliminarRaiz(){
 }
 
 // operaciones simples de consultas
+template <typename T>
+inline bool Agen<T>::vacio() const {
+    return r == NODO_NULO;
+}
 
+template <typename T>
+inline size_t Agen<T>::tama() const {
+    return num_nodos;
+}
 
+// Implementamos los métodos de consulta const y no-const, donde el método de consulta const devuelve una referencia constante al elemento, y el método de consulta no-const devuelve una referencia al elemento, para poder modificarlo
+template <typename T>
+inline const T& Agen<T>::elemento(nodo n) const {
+    assert(n != NODO_NULO);
+    return n->elto;
+}
+
+template <typename T>
+inline T& Agen<T>::elemento(nodo n) {
+    assert(n != NODO_NULO);
+    return n->elto;
+}
+
+template <typename T>
+inline typename Agen<T>::nodo Agen<T>::raiz() const {   
+    return r;
+}
+
+template <typename T>
+inline typename Agen<T>::nodo Agen<T>::padre(nodo n) const {
+    assert(n != NODO_NULO);
+    return n->padre;
+}
+
+template <typename T>
+inline typename Agen<T>::nodo Agen<T>::hijoIzqdo(nodo n) const {
+    assert(n != NODO_NULO);
+    return n->hizq;
+}
+
+template <typename T>
+inline typename Agen<T>::nodo Agen<T>::hermDrcho(nodo n) const  {
+    assert(n != NODO_NULO);
+    return n->heder;
+}
 
 
 

@@ -190,7 +190,9 @@ std::vector<linea_Area> lineas_areas_tombuctu (const Grafo& Adyadencia, const st
         if (!adyIslas[isla1][isla2]){
             adyIslas[isla1][isla2] = adyIslas[isla2][isla1] = true;
             lineas.push_back(candidata);
+            nLineas++;
         }
+        
     }
     return lineas;
 }
@@ -401,6 +403,8 @@ GrafoP<double> calcularDistanciaIsla (const vector<coordenadas>& ciudades,
         }
         G[i][i] = 0;
     }
+
+    return G;
 }
 
 double viajarZuelandiaLocura(
@@ -415,13 +419,14 @@ size_t origen, size_t destino)
     GrafoP<double> Deimos = calcularDistanciaIsla(ciudades_fobos, ciudades_costeras_fobos);
     GrafoP<double> Fobos = calcularDistanciaIsla(ciudades_deimos, ciudades_costeras_deimos);
 
-    // solo montara una reparacion de todas las carreteras, sin juntar puentes pues su distancia es muy grande
+    // solo montara una reparacion de todas las carreteras, sin juntar puentes pues son siempre más caro que las carreteras
     GrafoP<double> costes_min_d = Kruskall(Deimos);
     GrafoP<double> costes_min_f = Kruskall(Fobos);
 
     size_t puente_origen, puente_destino;
     double puenteMin = GrafoP<double>::INFINITO;
 
+    // escogemos el puente más cercanos entre islas
     for (size_t i = 0; i < nDeimos; i++){
         for (size_t j = 0; j < nFobos; j++){
             double actual = distanciaEuclidiana(ciudades_fobos[i], ciudades_deimos[j]);

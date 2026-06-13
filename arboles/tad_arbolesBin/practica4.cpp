@@ -10,23 +10,20 @@ de la figura se muestra la transformación si la entrada fuera el valor 9.*/
 template <typename T>
 void Abb<T>::descolgar_subarbol(const T& e)
 {   
-    if (vacio())
-    {
-        return; // no existe el elto buscado
-    }
+    if (!vacio()){
+        // Buscamos el deseado por la izq/der
+        if (e < r->elto){
+            r->izq.descolgar_subarbol(e);
+        } else if (e > r->elto){
+            r->der.descolgar_subarbol(e);
+        }
 
-    // Buscamos el deseado por la izq/der
-    if (e < r->elto){
-        r->izq.descolgar_subarbol(e);
-    } else if (e > r->elto){
-        r->der.descolgar_subarbol(e);
-    }
-
-    // si se ha encontrado elto, eliminamos todo subnodo
-    else {
-        arbol* subABB = r;
-        r = nullptr;
-        delete subABB;  // por implementacion del ABB se eliminara los subarboles
+        // si se ha encontrado elto, eliminamos todo subnodo
+        else {
+            arbol* subABB = r;
+            r = nullptr;
+            delete subABB;  // por implementacion del ABB se eliminara los subarboles
+        }
     }
 }
 
@@ -37,7 +34,7 @@ construyendo recursivamente los subárboles izquierdo y derecho de cada nodo.
 Implementa este algoritmo para equilibrar un ABB. */
 
 template <typename T>
-void recorrido_inorden(const Abb<T>& A, std::vector<T>& v) const {
+void recorrido_inorden(const Abb<T>& A, std::vector<T>& v){
     if (!A.vacio()){
         recorrido_inorden(A.izqdo(), v);
         v.push_back(A.elemento());
@@ -50,6 +47,7 @@ template <typename T>
 void construir_arbol (Abb<T>& A, const std::vector<T>& v, int inicio, int fin)
 {
     if (inicio <= fin){
+        // insertamos primero la raíz, y luego el resto de nodos 
         int medio = (inicio + fin) / 2;
         A.insertar(v[medio]);
 
@@ -70,9 +68,8 @@ Abb<T> equilibrar(const Abb<T>& A)
 
     // 2. Una vez listado los elementos obtenemos la mediana, construyendo el ABB
     Abb resultado;
-    construir_arbol(resultado, elementos, elementos.begin(), elementos.end());
+    construir_arbol(resultado, elementos, 0, elementos.size() - 1);
     
-    // De esta manera 
     return resultado;
 }
 
@@ -109,7 +106,7 @@ Abb<T> union_abb(const Abb<T>& A, const Abb<T>& B)
     return resultado;
 }
 
-// Función auxiliar recursiva para insertar todos los elementos de un árbol
+// Función auxiliar recursiva para insertar todos los elementos de un árbol, (PREORDEN)
 template <typename T>
 void insertarArbol(Abb<T>& destino, const Abb<T>& origen) {
     if (!origen.vacio()) {
@@ -135,10 +132,10 @@ template <typename T>
 Abb<T> interseccion_abb(const Abb<T>& A, const Abb<T>& B)
 {
     Abb resultado;
-
     if (!A.vacio() || !B.vacio()){
         elementos_repetidos(resultado, A, B);
     }
+    equilibrar(resultado);
 
     return resultado;
 }
@@ -163,63 +160,60 @@ operación , que nos indica si un elemento dado pertenece o no a un conjunto.
 representación del tipo Conjunto debe ser tal que la operación de pertenencia esté en el
 caso promedio en O(log n).*/
 
-/*  template <typename T>
-Abb<T> operacion_especial(const Abb<T>& A, const Abb<T>& B){
-    Abb<T> resultado;
+// No ponemos clase generica <T> pues necesitariamos de una cabecera .hpp
+class Conjunto {
+    public:
+        // Operaciones del conjunto
+        Conjunto();
+        bool pertenece(const int& e) const; // O(log n) pues se representa con un ABB
 
-    // 1. llamamos a los resultados internos de union e interseccion 
-    Abb<T> union = union_abb(A, B);
-    Abb<T> interseccion = interseccion_abb(A, B);
+        // Operadores del conjunto
+        Conjunto operator |(const Conjunto& A, const Conjunto& B);
+        Conjunto operator &(const Conjunto& A, const Conjunto& B);
+        Conjunto operator♦(const Conjunto& A, const Conjunto& B);
 
-    // 2. Introducimos solo los elementos que no se repitan, de la union e interseccion
-    operador_rec(resultado, union, interseccion);
+    private:
+        Abb<int> arbol; // el conjunto se representa mediante un ABB, donde la operación
+};
 
-    return resultado;
+Conjunto::Conjunto() : arbol() {} 
+
+bool Conjunto::pertenece(const int& e) const {
+    return !arbol.buscar(e).vacio(); // si el resultado de buscar no es vacio, entonces pertenece
 }
 
-template <typename T>
-void operador_rec(Abb<T>& A, const Abb<T>& B, const Abb<T>& C){
-    // insertamos solo los distintos
+Conjunto Conjunto::operator |(const Conjunto& A, const Conjunto& B) {
+    return union_abb(A.arbol, B.arbol);
 }
 
-*/ // ¡¡¡¡¡Super ineficiente!!!! Orden n+m
-
-template <typename T>
-Abb<T> operator♦(const Abb<T>& A, const Abb<T>& B) {
-    Abb<T> resultado;
-
-    // Recorremos todo conjunto A y B, 1 y 2
-    xor_recursivo(resultado, A, B);
-    xor_recursivo(resultado, B, A);
-
-    //2. retornamos el resultado
-    return resultado;
+Conjunto Conjunto::operator &(const Conjunto& A, const Conjunto& B) {-
+    return interseccion_abb(A.arbol, B.arbol);
 }
- 
-template <typename T>
-void xor_recursivo(Abb<T>& res, const Abb<T>& origen, const Abb<T>& otro){
-    if (!origen.vacio()){
-        T elto_actual = origen.elemento();
 
-        // comparamos la pertenencia, si no pertenece al arbol b, quiere decir que solo existe en A, y es la operacion (union - interseccion)
-        if (elto_actual != otro.buscar(e)){
-            res.insertar(elto_actual);
-        }
-
-        xor_recursivo(res, origen.izqdo(), otro);
-        xor_recursivo(res, origen.drcho(), otro);
+Conjunto Conjunto::operator♦(const Conjunto& A, const Conjunto& B) { // orden de complejidad O(n log n) 
+    // escogemos los elementos que hay en A, y en B, pero no en ambos, es decir, los elementos que no se repiten
+    Conjunto res;
+    if (!A.arbol.vacio() || !B.arbol.vacio()){
+        elementos_no_repetidos(res.arbol, A.arbol, B.arbol);
     }
+    equilibrar(res.arbol); // equilibramos el resultado final
+    return res;
 }
 
-/*¡IMPORTANTE EL EJERCICIO TE LO PLANTEAS COMO UN TAD conjunto (3, 4, 5)!
+void elementos_no_repetidos(Abb<int>& A, const Abb<int>& B, const Abb<int>& C)
+{   
+    int elto_actual = B.elemento();
 
-Cositas: 
+    if (B.pertenece(elto_actual) && !C.pertenece(elto_actual)){
+        A.insertar(elto_actual);
+    } else if (!B.pertenece(elto_actual) && C.pertenece(elto_actual)){
+        A.insertar(elto_actual);
+    }
 
-for(auto e: listaB){ // para cuando no sepamos que tipo de estructura de datos, y auto una vez declarada el tipo, como cuando usamos nodos, o tipos internos de tads
-    //condiciones
+    // hacemos el resto de llamadas recursivas, recorriendo subárboles izquierdo y derecho
+    elementos_no_repetidos(A, B.izqdo(), C);
+    elementos_no_repetidos(A, B.drcho(), C);
 }
-
-*/
 
 // EJERCICIOS EXTRAS 
 
@@ -249,5 +243,36 @@ T valor_superior(const Abb<T>& A, const T& e, T& candidato, bool& encontrado) {
 
 // Dado un Abb A, decir cual es el k-esimo elemento del árbol, (podemos usar el abin)
 
+template <typename T>
+T kEsimo(const Abb<T>& A, int cont, int k){
+    if(A.vacio()) return T(); // si no se ha encontrado el elto, devolvemos un valor nulo T()
 
+    else{
+        // Procesamos la parte izquierda
+        T izq = kEsimo(A.izqdo(), cont, k);
+        if (izq != T()) return izq;
 
+        // Procesamos el nodo actual y comprobamos si es el k-esimo
+        cont++;
+        if(cont == k) return A.elemento();
+
+        // Procesamos la parte derecha
+        return kEsimo(A.drcho(), cont, k),
+    }
+}
+
+template <typename T>
+T LCA(const Abb<T>& A, const T& e1, const T& e2){
+    if (A.vacio()) return T(); // si no se ha encontrado el elto, devolvemos un valor nulo T()
+    
+    if (A.elemento() > e1 && A.elemento() > e2) {
+        // Ambos elementos están en el subárbol izquierdo
+        return LCA(A.izqdo(), e1, e2);
+    } else if (A.elemento() < e1 && A.elemento() < e2) {
+        // Ambos elementos están en el subárbol derecho
+        return LCA(A.drcho(), e1, e2);
+    } else {
+        // Uno de los elementos está en el subárbol izquierdo y el otro en el derecho, o uno de ellos es el nodo actual
+        return A.elemento();
+    }
+}

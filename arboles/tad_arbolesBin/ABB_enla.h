@@ -19,11 +19,10 @@ public:
     const Abb& izqdo() const;
     const Abb& drcho() const
 
-
     // Operadores del tad definidos no implementados
     Abb operator O(const Abb& A, const Abb& B);
     Abb operator A(const Abb& A, const Abb& B);
-    Abb operator ♦(const Abb& A, const Abb& B);
+    Abb operator (const Abb& A, const Abb& B);
 
     // Consultora de pertenece el elemento
     bool pertenece(const T& e) const;

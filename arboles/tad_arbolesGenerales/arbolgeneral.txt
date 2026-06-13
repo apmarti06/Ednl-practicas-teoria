@@ -60,3 +60,43 @@ nodoHermDrcho(nodo n) const
 Precondición: n es un nodo del árbol
 Postcondición: Devuelve el hermano derecho del nodo n. Si no existe, devuelve
 NODO_NULO. 
+
+
+RECORRIDOS PREORDEN/INORDEN/POSTORDEN
+
+preorden(Agen, nodo, void (*func) (parametros de func)){
+    if (n != NODO_NULO){
+        func();
+        typename Agen<T>::nodo hijo = Agen (hijoIzq)
+        while (hijo != NODO_NULO){
+            preorden();
+            hijo = A.hermDrcho(hijo);
+        }
+    }
+}
+
+inorden(Agen, nodo, void (*func) (parametros de func)){
+    if (n != NODO_NULO){
+        typename Agen<T>::nodo hijo = Agen (hijoIzq)
+        if (hijo != NODO_NULO){
+            inorden(Agen, hijo, func);
+            func();
+            while (hijo = A.hermDrcho(hijo) != NODO_NULO){
+                inorden(Agen, hijo, func);
+            }
+        } else {
+            func();
+        }
+    }
+}
+
+postorden(Agen, nodo, void (*func) (parametros de func)){
+    if (n != NODO_NULO){
+        typename Agen<T>::nodo hijo = Agen (hijoIzq)
+        while (hijo != NODO_NULO){
+            postorden(Agen, hijo, func);
+            hijo = A.hermDrcho();
+        }
+        func();
+    }
+}

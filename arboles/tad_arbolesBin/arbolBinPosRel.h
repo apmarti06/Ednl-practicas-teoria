@@ -1,9 +1,16 @@
 #ifndef ABIN_VEC1_H
 #define ABIN_VEC1_H
+
 #include <cassert>
 #include <cstddef> // size_t
 #include <cstdint> // SIZE_MAX
 #include <utility> // swap
+
+// Posiciones relativas, nodo n
+// Padre (n-1)/2 Abueñlo (n-3)/4
+// Hijo Izq (2*n+1) Hijo Der (2*n+2)
+// Hijo izq del hijo Izq (4*n+3) + Hijo der (4*n+4)
+// Hijo izq del hijo der (4*n+5) + Hijo der (4*n+6)
 
 template <typename T> class Abin {
 public:
@@ -29,6 +36,10 @@ public:
     Abin& operator =(const Abin& A); // Asignación de árboles
     ~Abin();
 
+    // Operaciones practica 1
+    int profundidad(nodo n);
+    int altura(nodo n);
+
 private:
     T* nodos; //vector de elementos
     size_t maxNodos, numNodos;
@@ -40,7 +51,7 @@ template <typename T>
 const typename Abin<T>::nodo Abin<T>::NODO_NULO{SIZE_MAX};
 
 template <typename T>
-inline bool Abin<T>::valido (nodo n) const {
+inline bool Abin<T>::valido(nodo n) const {
     return n < maxNodos && !(nodos[n] == ELTO_NULO); // si la posicion esta ocupada
 }
 
@@ -178,6 +189,30 @@ inline Abin<T>& Abin<T>::operator =(const Abin& A){
 template <typename T>
 inline Abin<T>::~Abin(){
     delete[] nodos;
+}
+
+/*Operaciones extras*/
+
+template <typename T>
+int Abin<T>::altura(nodo n){
+    // calculamos la altura de cualquier nodo
+    if (n == NODO_NULO){
+        return -1;
+    }
+    int hizq = altura(n*2+1);
+    int hder = altura(n*2+2);
+
+    return 1 + (hizq > hder) ? hizq : hder;
+}
+
+template <typename T>
+int Abin<T>::profundidad(nodo n){
+    // calculamos la profundidad para cualquier nodo
+    if (n == NODO_NULO){
+        return 0;
+    } else {
+        return 1 + profundidad((n-1)/2);
+    }
 }
 
 #endif // ABIC_1.H

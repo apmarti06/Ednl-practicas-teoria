@@ -1277,3 +1277,4 @@ std::pair<Puente, Puente> ciudades_puente (const GrafoP<tCoste>& Isla1,
 }
 
 
+/*Real escoger cualquiera sin mirar cual es el mejor puente(pues el coste sigue siendo 0)*/

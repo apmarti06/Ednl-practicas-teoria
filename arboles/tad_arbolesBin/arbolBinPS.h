@@ -1,5 +1,6 @@
 #ifndef ABIN_VEC0_H
 #define ABIN_VEC0_H
+
 #include <cassert>
 #include <cstddef> // size_t
 #include <cstdint> // SIZE_MAX
@@ -22,9 +23,6 @@ public:
     size_t tamaMax() const; // Requerido por la implementación
     const T& elemento(nodo n) const; // Lec. en Abin const
     T& elemento(nodo n); // Lec/Esc. en Abin no-const
-    // operaciones ejercicio 4 practica 1
-    T altura(nodo n) const;
-    T profundidad(nodo n) const;
 
     nodo raiz() const;
     nodo padre(nodo n) const;
@@ -39,14 +37,14 @@ private:
         T elto;
         nodo padre, hizq, hder;
     };
+
     celda* nodos; // Vector de celdas 
-    size_t maxNodos, // Tamaño del vector
-    numNodos; // Tamaño del árbol
+    size_t maxNodos, numNodos; // Tamaño del árbol + MaxNodos el limite del arbol
     nodo libre; // Lista de celdas libres
 
     // Método privado que verifica si la posicion es válida
-    bool valido(nodo n)const;
-}
+    bool valido(nodo n) const;
+};
 
 // Declaracion nodo nulo + métodos privados
 template <typename T>
@@ -62,7 +60,6 @@ inline Abin<T>::Abin(size_t maxNodos) : nodos{new celda[maxNodos]}, maxNodos{max
     if (maxNodos > 1){ // implementamos la lista de celdas
         libre = 1;
         for (nodo n = 1; n < maxNodos; n++){ // empezamos desde la pos 1 pues la 0 esta destinada para el nodo raíz
-            nodos[n].hizq = n + 1;
             // colocamos todas las celdas como libres
             nodos[n].padre = NODO_NULO;
         }
@@ -110,8 +107,7 @@ inline void Abin<T>::eliminarHijoIzqdo(nodo n) {
     assert(valido(n));
         nodo hizqdo = nodos[n].hizq;
     assert(hizqdo != NODO_NULO); // Existe hijo izqdo.
-    assert(nodos[hizqdo].hizq == NODO_NULO && // y es
-        nodos[hizqdo].hder == NODO_NULO); // hoja.
+    assert(nodos[hizqdo].hizq == NODO_NULO && nodos[hizqdo].hder == NODO_NULO); // y es hoja
         nodos[n].hizq = NODO_NULO;
         // Añadir hizqdo al inicio de la lista de libres.
         nodos[hizqdo].hizq = libre;
@@ -200,7 +196,7 @@ if (!A.vacio()) {
         nodos[n] = A.nodos[n];
     numNodos = A.numNodos;
     libre = A.libre;
- }
+    }
 }
 
 template <typename T>
@@ -210,9 +206,8 @@ inline Abin<T>& Abin<T>::operator =(const Abin& A){
     std::swap(maxNodos, B.maxNodos);
     std::swap(numNodos, B.numNodos);
     std::swap(libre, B.libre);
-        return *this;
+    return *this;
 }
-
 
 template <typename T>
 inline Abin<T>::Abin~(){

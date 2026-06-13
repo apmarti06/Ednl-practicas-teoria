@@ -43,12 +43,13 @@ private:
         T elto;
         nodo padre, hizq, hder;
     };
+
     nodo r; // raiz del arbol del que se parte (ademas tendremos acceso al resto de nodos)
     size_t num_nodos; // para facilita la implementacion
     
     // metodos privados que usamos en funciones
-    nodo copiar(nodo n);
-    void destruir(nodo n);
+    static nodo copiar(nodo n);
+    static void destruir(nodo n);
 };
 
 // implementacion usando inline
@@ -60,36 +61,6 @@ const typename Abin<T>::nodo Abin<T>::NODO_NULO{nullptr};
 template <typename T>
 inline Abin<T>::Abin() : r{NODO_NULO} , num_nodos{0} {}
 
-// Metodos privados que usan para la copia y el destructor
-template <typename T>
-typename Abin<T>::nodo Abin<T>::copiar(nodo n){ // el nodo n siempre debe ser la raiz del árbol, PREORDEN
-    nodo m = NODO_NULO;
-    if (n != NODO_NULO){
-        Abin A; // es el que devuelve todos los nodos
-        A.r = new celda{n->elto};
-        // copiamos el subarbol izquierdo
-        A.r->hizq = copiar(n->hizq);
-        if (A.r->hizq != NODO_NULO) A.r->hizq->padre = A.r; // estudiamos caso base
-        // copiamos el subarbol derecho
-        A.r->hder = copiar(n->hder);
-        if (A.r->hder != NODO_NULO) A.r->hder->padre = A.r; // estudiamos caso base
-
-        m = A.r; // copiamos el nodo central devolviendose el árbol al completo
-        A.r = NODO_NULO; // evita destruir la copia
-    }
-    return m;
-}
-
-template <typename T> // metodo privado destruir, POSTORDEN
-typename Abin<T>::nodo Abin<T>::destruir(nodo& n){
-    if(n != NODO_NULO){
-        destruir(n->hizq);
-        destruir(n->hder);
-        // igual que cuando eliminabamos uno a uno
-        delete n;
-        n = NODO_NULO;
-    }
-}
 // ejercicio 4/5 practica 1
 template <typename T> // metodo privado de alturaRec
 int Abin<T>::altura(nodo n) const{
@@ -124,6 +95,23 @@ inline Abin<T>::Abin(const Abin& A) {
     num_nodos = A.num_nodos;
 }
 
+template <typename T>
+typename Abin<T>::nodo Abin<T>::copiar(nodo n){
+    nodo m = NODO_NULO;
+    if (n != NODO_NULO){
+        Abin A; // contiene nodos copiados
+        A.r = new celda{n->elto};
+        A.r->hizq = copiar(n->hizq);
+        if (A.r->hizq != NODO_NULO) A.r->hizq->padre = A.r; // apuntamos al nodo padre
+        A.r->hder = copiar(n->hizq);
+        if (A.r->hder != NODO_NULO) A.r->hder->padre = A.r; // apuntamos al nodo padre
+        // actualizamos para que no se colasionen todos los nodos
+        m = A.r;
+        A.r = NODO_NULO;
+    }
+    return m;
+}
+
 template <typename T> // operador de asignacion
 inline Abin<T>& Abin<T>::operator=(const Abin& A){
     Abin B{A};
@@ -138,6 +126,17 @@ inline Abin<T>::~Abin(){
     destruir(r);
 }
 
+template <typename T> // destruir metodo privado
+void Abin<T>::destruir(nodo& n){
+    if (n != NODO_NULO){
+        destruir(n->hizq);
+        destruir(n->hder);
+        // aseguramos que no quede basura al borrar el nodo
+        delete n;
+        n = NODO_NULO;
+    }
+}
+
 // operaciones modificadoras
 
 template <typename T>
@@ -149,19 +148,23 @@ inline void Abin<T>::insertarRaiz(const T& e){
 
 template <typename T>
 inline void Abin<T>::insertarHizq(nodo n ,const T& e){
+    // condiciones, tener una raiz, el nodo n existe y no tiene hijo_izquierdo
     assert(!vacio());
     assert(n != NODO_NULO);
-    assert(n->hizq == NODO_NULO); // no puede tener asignado ya ese nodo un descendiente
-    n->hizq = new celda{e, n}; // indicamos que su nodo padre es n, apuntando hacia este
+    assert(n->hizq == NODO_NULO); 
+
+    n->hizq = new celda{e, n}; // indicamos que su nodo padre es n, apuntando hacia este, y su padre al hijo (n->izq)
     num_nodos++;
 }
 
 template <typename T>
 inline void Abin<T>::insertarHder(nodo n ,const T& e){
+    // condiciones, tener una raiz, el nodo n existe y no tiene hijo_izquierdo
     assert(!vacio());
     assert(n != NODO_NULO);
-    assert(n->hder == NODO_NULO); // no puede tener asignado ya ese nodo un descendiente
-    n->hder = new celda{e, n}; // indicamos que su nodo padre es n, apuntando hacia este
+    assert(n->hder == NODO_NULO);
+
+    n->hder = new celda{e, n}; // indicamos que su nodo padre es n, apuntando hacia este, y su padre al hijo (n->hder)
     num_nodos++;
 }
 
@@ -170,7 +173,9 @@ inline void Abin<T>::eliminarHizq(nodo n){
     assert(n != NODO_NULO);
     assert(n->hizq != NODO_NULO); // que exista nodo nulo y que este sea hoja
     assert(n->hizq->hizq == NODO_NULO && n->hizq->hder == NODO_NULO); 
-    delete n->hizq; // eliminamos dicho nodo
+
+    // eliminamos dicho nodo, y ponemos esa zona de memoria a nullptr para que no apunte a basura
+    delete n->hizq; 
     n->hizq = NODO_NULO;
     --num_nodos;
 }
@@ -180,8 +185,9 @@ inline void Abin<T>::eliminarHder(nodo n){
     assert(n != NODO_NULO);
     assert(n->hder != NODO_NULO); // que exista nodo nulo y que este sea hoja
     assert(n->hder->hizq == NODO_NULO && n->hder->hder == NODO_NULO); 
-    // clave ejecutar siempre los dos pasos, pues sino el arbol se le asignaria basura, no un que esa direccion de memoria esta vacia
-    delete n->hder; // eliminamos dicho nodo
+
+    // eliminamos dicho nodo, y ponemos esa zona de memoria a nullptr para que no apunte a basura
+    delete n->hder; 
     n->hder = NODO_NULO;
     --num_nodos;
 }
@@ -195,7 +201,6 @@ inline void Abin<T>::eliminarRaiz(){
 }
 
 // operaciones de miembros publicos consultoras
-
 template <typename T>
 inline bool Abin<T>::vacio() const{
     return num_nodos == 0;
@@ -241,6 +246,7 @@ inline typename Abin<T>::nodo Abin<T>::hijoDer(nodo n) const{
     assert(n != NODO_NULO);
     return n->hder;
 }
+
 
 
 #endif 
